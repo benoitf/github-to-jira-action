@@ -1,0 +1,49 @@
+# Publish next version of the github action on each commit to main branch
+
+name: publish-next
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Execute pnpm
+        run: pnpm install
+
+      - name: build
+        run: |
+          pnpm build
+
+      - name: publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir next
+          cp -r lib next
+          cp action.yaml next
+          echo "list remote"
+          git remote -v
+          cd next
+          git init .
+          git config --local user.name ${{ github.actor }}
+          git config --local user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git checkout --orphan next
+          git add ./*
+          git commit -m "Publish next version" -s
+          git remote -v
+          git push -f "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/benoitf/github-to-jira-action.git" next

@@ -1,0 +1,30 @@
+# Check if the PR is ready to be merged
+
+name: pr-check
+
+
+on: [pull_request]
+
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Execute pnpm
+        run: pnpm install
+
+      - name: check
+        run: |
+          pnpm check
