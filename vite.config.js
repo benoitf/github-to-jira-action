@@ -30,7 +30,7 @@ const config = {
     rollupOptions: {
       external: [...builtinModules.flatMap((p) => [p, `node:${p}`])],
       output: {
-        entryFileNames: '[name].js',
+        entryFileNames: '[name].mjs',
       },
     },
     emptyOutDir: true,
