@@ -119,44 +119,67 @@ syncProjects:
 
 ### Step 1: Create a GitHub Workflow
 
-In your repository, create a workflow file (e.g., `.github/workflows/sync.yml`) and add the following:
-
 ```yaml
-name: Sync GitHub to Jira
 
 on:
+  push:
+    branches:
+      - main
+  # every hour    
   schedule:
-    # Sync every hour
     - cron: '0 * * * *'
+  workflow_dispatch:
+
+name: Sync GitHub to Jira
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Restore state
+      - name: Restore state from previous run using GitHub variables (no secret inside)
         run: |
-          # read secrets that has the state
-            echo "$SYNC_STATE" > sync-state.yaml
-        env:
-          SYNC_STATE: ${{ secrets.SYNC_STATE }}
+          if [ -z "${{ vars.SYNC_STATE }}" ]; then
+            echo "no previous persisted state"
+          else
+            echo "restoring previous sync state"
+            echo "${{ vars.SYNC_STATE }}" > sync-state.yaml
+            cat sync-state.yaml
+          fi
 
+        # use development branch of the action (next is the build from the main branch)
       - name: Run GitHub to Jira Action
-        uses: your-org/github-to-jira-action@v1
+        uses: benoitf/github-to-jira-action@next
         with:
-          jiraHost: ${{ secrets.JIRA_HOST }
-          jiraWriteToken: ${{ secrets.JIRA_WRITE_TOKEN }
-          # needs to be able to read all projects/issues from referenced GitHub issues in the yaml file
-          githubReadToken: ${{ secrets.GITHUB_TOKEN }
+          jira-host: ${{ secrets.JIRA_HOST }}
+          jira-write-token: ${{ secrets.JIRA_WRITE_TOKEN }}
+          github-read-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Save state for the next run
+        # save the state using a custom token as default GITHUB_TOKEN does not have the required permissions
+        # to save variables
+      - name: persist state
+        env:
+          GH_TOKEN: ${{ secrets.SET_VARIABLE_GITHUB_TOKEN }}
         run: |
-          # use gh cli to save the content of a file into a secret
-          gh secret set SYNC_STATE --body "$(cat sync-state.yaml)"
+          # use gh cli to save the content of a file into a variable
+          gh variable set SYNC_STATE < sync-state.yaml
+
 ```
 
+It is using GitHub variables to store the state between each run. Github actions don't have permissions for that, so a TOKEN needs to be granted to the step 'persist state'
+In the example above, `GH_TOKEN: ${{ secrets.SET_VARIABLE_GITHUB_TOKEN }}` is granting that permission.
 
-### Step 2: Configure Secrets 🔐
+From GitHub UI it is then possible to view the current state of each repo sync (and optionnaly delete it)
+
+---
+
+### Step 2: Add the YAML Configuration
+
+In your repository, create a workflow file (e.g., `.github/workflows/execute-sync.yml`) and add the following:
+
+Place your YAML configuration file in `execute-sync.yaml`.
+
+### Step 3: Configure Secrets 🔐
 
 You need to provide Jira credentials and GitHub tokens as secrets in your repository:
 
@@ -164,17 +187,21 @@ You need to provide Jira credentials and GitHub tokens as secrets in your reposi
 2. Add the following secrets:
    - **JIRA_WRITE_TOKEN**: Your Jira Rest API token to write.
    - **JIRA_HOST**: The base URL of your Jira instance.
-   - **GITHUB_READ_TOKEN**: GitHub token to access the repository.
+
+The **GITHUB_TOKEN** secrets is one from the default Github actions. It is ok to use this token if all GitHub projects/issues data are publicly available.
 
 ---
 
-### Step 3: Add the YAML Configuration
+### Step 4: Ensure JIRA scheme/componets are valid in JIRA project
 
-Place your YAML configuration file in `sync.yaml`.
+ - ensure `Story Points` field is available on every issue type
+ - ensure the issues types are available in the JIRA project (by default it may only be a subset like only BUG and TASK).
+ - ensure the statuses/transitions (CLOSED/IN PROGRESS/etc) are available in the JIRA project.
+ - *components* from the yaml file will be sync but they need to exist before. Check that the name of the components are existing.
 
 ---
 
-### Step 4: Run the Action
+### Step 5: Run the Action
 
 Once the workflow and configuration file are set, the action will automatically run based on your schedule or you can manually trigger it from the **Actions** tab in your repository.
 
