@@ -4,12 +4,12 @@ runs:
   using: 'node20'
   main: 'lib/index.mjs'
 inputs:
-  jiraHost:
+  jira-host:
     description: 'URL of the Jira instance'
     required: true
-  jiraWriteToken:
+  jira-write-token:
     description: 'Jira REST API token with write access'
     required: true
-  githubReadToken:
+  github-read-token:
     description: 'GitHub token with read access to the repositories to sync'
     required: true
