@@ -1,4 +1,5 @@
-import { debug, endGroup, info, startGroup } from '@actions/core';
+import { debug, endGroup, info, startGroup, warning } from '@actions/core';
+import { HttpException } from 'jira.js';
 import * as jira2md from 'jira2md';
 import moment from 'moment';
 import type { ProjectConfiguration } from './config.js';
@@ -210,17 +211,17 @@ export class SyncRepository {
   async start(): Promise<{ afterDate: string }> {
     startGroup('🚥 Init and sync...');
     // check JIRA is connected and do checks
-    debug('Check JIRA is available');
+    info('Check JIRA is available');
     await this.#jira.initAndCheck();
 
     // get all the issues from GitHub that have been updated since a given date
-    debug('Grab recent issues being updated...');
+    info('Grab recent issues being updated...');
     const recentIssuesSearch = await this.#github.getIssuesUpdatedAfter();
 
-    debug('Sync releases...');
+    info('Sync releases...');
     await this.syncReleases(recentIssuesSearch.issues);
 
-    debug('Sync sprint...');
+    info('Sync sprint...');
     await this.syncSprints(recentIssuesSearch.issues);
 
     endGroup();
@@ -291,7 +292,26 @@ export class SyncRepository {
       }
 
       // create the issue in Jira
-      await this.#jira.createOrUpdateIssue(issueToCreate);
+      try {
+        await this.#jira.createOrUpdateIssue(issueToCreate);
+      } catch (error: unknown) {
+        debug(`Error creating issue in Jira ${error}`);
+        // check if the error is a HttpException error
+        if (error instanceof HttpException) {
+          const httpException = error as HttpException;
+          // check if the error is related to throttling
+          if (
+            httpException.status === 401 &&
+            httpException.statusText === 'Unauthorized' &&
+            httpException.code === 'ERR_BAD_REQUEST'
+          ) {
+            // pause for 30s and retry after
+            warning('Jira unauthorized/throttling rate limit reached, pausing for 30s before retrying');
+            await new Promise((resolve) => setTimeout(resolve, 30000));
+            await this.#jira.createOrUpdateIssue(issueToCreate);
+          }
+        }
+      }
     }
     endGroup();
     return { afterDate: recentIssuesSearch.afterDate };

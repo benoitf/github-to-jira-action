@@ -1,4 +1,4 @@
-import { debug } from '@actions/core';
+import { info } from '@actions/core';
 import { getOctokit } from '@actions/github';
 import type { GitHub as OctokitGitHub } from '@actions/github/lib/utils.js';
 import { graphql } from '@octokit/graphql';
@@ -184,12 +184,12 @@ query getRecentIssues($cursorAfter: String) {
       // we have enough entries, need to return only the first _maxBatchNumberIssues
       return allGraphQlResponse.slice(0, this.#projectConfiguration.maxBatchNumberIssues);
     }
-    debug(`Fetched additional ${currentEntries.length}, current total ${allGraphQlResponse.length} items`);
+    info(`Fetched additional ${currentEntries.length}, current total ${allGraphQlResponse.length} items`);
 
     // if there are more issues to fetch, fetch them
     if (graphQlResponse.search.pageInfo.hasNextPage) {
       // needs to redo the search starting from the last search
-      debug('Fetching additional issues...');
+      info('Fetching additional issues...');
       return await this.doGetIssuesUpdatedAfterBatch(graphQlResponse.search.pageInfo.endCursor, allGraphQlResponse);
     }
 
