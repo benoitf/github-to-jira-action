@@ -8,9 +8,9 @@ import type { SyncStateYaml, SyncYaml } from './sync-yaml-config-file.js';
 import { Sync } from './sync.js';
 
 export class Main {
-  public static readonly JIRA_HOST: string = 'jira_host';
-  public static readonly JIRA_WRITE_TOKEN: string = 'jira_write_token';
-  public static readonly GITHUB_READ_TOKEN: string = 'github_read_token';
+  public static readonly JIRA_HOST: string = 'jira-host';
+  public static readonly JIRA_WRITE_TOKEN: string = 'jira-write-token';
+  public static readonly GITHUB_READ_TOKEN: string = 'github-read-token';
 
   #sync: Sync | undefined;
 
