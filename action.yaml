@@ -2,7 +2,7 @@ name: 'Sync Github Projects to Jira'
 description: 'Sync Github Projects to Jira'
 runs:
   using: 'node20'
-  main: 'lib/index.js'
+  main: 'lib/index.mjs'
 inputs:
   jiraHost:
     description: 'URL of the Jira instance'
