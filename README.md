@@ -54,7 +54,7 @@ statusTypeMappings:
         toJira: In Progress
       - fromGithub: 🚥 In Review
         toJira: Review
-      - fromGithub: ⏳On Hold
+      - fromGithub: ⏳ On Hold
         toJira: Backlog
       - fromGithub: ✔️ Done
         toJira: Closed
@@ -63,7 +63,7 @@ issuesTypeMappings:
   - name: My Issue Mapping
     default: Task
     mapping:
-      - fromGithubLabel: kind/epic⚡
+      - fromGithubLabel: kind/epic ⚡
         toJira: Epic
       - fromGithubLabel: kind/bug 🐞
         toJira: Bug
@@ -75,9 +75,9 @@ syncProjects:
     github:
       owner: my-organization-on-github
       repo: my-repository-name
-      # the name of the Github Project v2 defining all sprints
+      # the name of the GitHub Project v2 defining all sprints
       project: My Project Planning
-      # start sync from every issues updated after this date
+      # start sync from every issue updated after this date
       # after the first run, it'll be changed in the state
       # to a more recent date
       afterDate: 2024-04-25
@@ -120,7 +120,6 @@ syncProjects:
 ### Step 1: Create a GitHub Workflow
 
 ```yaml
-
 on:
   push:
     branches:
@@ -163,21 +162,21 @@ jobs:
         run: |
           # use gh cli to save the content of a file into a variable
           gh variable set SYNC_STATE < sync-state.yaml
-
 ```
 
-It is using GitHub variables to store the state between each run. Github actions don't have permissions for that, so a TOKEN needs to be granted to the step 'persist state'
+It is using GitHub variables to store the state between each run. GitHub Actions don't have permissions for that,
+so write access needs to be granted to the step `persist state`.
 In the example above, `GH_TOKEN: ${{ secrets.SET_VARIABLE_GITHUB_TOKEN }}` is granting that permission.
 
-From GitHub UI it is then possible to view the current state of each repo sync (and optionnaly delete it)
+From GitHub UI it is then possible to view the current state of each repo sync (and optionally delete it).
 
 ---
 
 ### Step 2: Add the YAML Configuration
 
-In your repository, create a workflow file (e.g., `.github/workflows/execute-sync.yml`) and add the following:
+Copy the above workflow YAML to a workflow file in your repository (e.g., `.github/workflows/execute-sync.yaml`).
 
-Place your YAML configuration file in `execute-sync.yaml`.
+Place your `github-to-jira-action` YAML configuration file in `sync.yaml`.
 
 ### Step 3: Configure Secrets 🔐
 
@@ -188,22 +187,26 @@ You need to provide Jira credentials and GitHub tokens as secrets in your reposi
    - **JIRA_WRITE_TOKEN**: Your Jira Rest API token to write.
    - **JIRA_HOST**: The base URL of your Jira instance.
 
-The **GITHUB_TOKEN** secrets is one from the default Github actions. It is ok to use this token if all GitHub projects/issues data are publicly available.
+The **GITHUB_TOKEN** secret is one from the default GitHub Actions. It is ok to use this token if all GitHub projects/issues data are publicly available.
 
 ---
 
-### Step 4: Ensure JIRA scheme/componets are valid in JIRA project
+### Step 4: Ensure JIRA scheme/components are valid in JIRA project
 
- - ensure `Story Points` field is available on every issue type
- - ensure the issues types are available in the JIRA project (by default it may only be a subset like only BUG and TASK).
- - ensure the statuses/transitions (CLOSED/IN PROGRESS/etc) are available in the JIRA project.
- - *components* from the yaml file will be sync but they need to exist before. Check that the name of the components are existing.
+ - Ensure `Story Points` field is available on every issue type.
+ - Ensure the issues types are available in the JIRA project (by default it may only be a subset like only `Bug` and `Task`).
+ - Ensure the statuses/transitions (`CLOSED`/`IN PROGRESS`/etc.) are available in the JIRA project.
+ - Ensure that the component(s) referenced in the configuration YAML file exist in the JIRA project.
 
 ---
 
 ### Step 5: Run the Action
 
-Once the workflow and configuration file are set, the action will automatically run based on your schedule or you can manually trigger it from the **Actions** tab in your repository.
+Once the workflow and configuration file are committed to the repository, the
+action will automatically run based on your schedule.  It will also be triggered
+when you merge updates (such as configuration changes) to the repository `main`
+branch.  And, you can manually trigger it from the **Actions** tab in your
+repository GitHub page.
 
 ---
 
