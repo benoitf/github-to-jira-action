@@ -1,4 +1,4 @@
-import { debug, endGroup, info, startGroup, warning } from '@actions/core';
+import { debug, endGroup, error, info, isDebug, startGroup, warning } from '@actions/core';
 import { HttpException } from 'jira.js';
 import * as jira2md from 'jira2md';
 import moment from 'moment';
@@ -297,11 +297,14 @@ export class SyncRepository {
       // create the issue in Jira
       try {
         await this.#jira.createOrUpdateIssue(issueToCreate);
-      } catch (error: unknown) {
-        debug(`Error creating issue in Jira ${error}`);
+      } catch (err: unknown) {
+        error(`❌ Error creating issue in Jira ${String(err)}`);
+        if (isDebug()) {
+          console.error(err);
+        }
         // check if the error is a HttpException error
-        if (error instanceof HttpException) {
-          const httpException = error as HttpException;
+        if (err instanceof HttpException) {
+          const httpException = err as HttpException;
           // check if the error is related to throttling
           if (
             httpException.status === 401 &&
