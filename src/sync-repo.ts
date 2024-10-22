@@ -140,10 +140,12 @@ export class SyncRepository {
     // get all sprints from all issues that we need to handle
     const filteredGithubSprints = issues
       .flatMap((issue) => issue.projectItems.projects)
+      // keep only the projects not null
+      .filter((p) => p !== null)
       .filter((p) => p.project.sprint !== undefined)
       .filter((p) => p.project.title?.name === this.#projectConfiguration.github.project);
 
-    // keepo only .project.sprint fields that are defined
+    // keep only .project.sprint fields that are defined
     const githubSprints = filteredGithubSprints
       .filter((s) => s.project.sprint !== undefined)
       .map((s) => s.project.sprint)
