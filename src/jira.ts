@@ -1,4 +1,4 @@
-import { debug } from '@actions/core';
+import { debug, warning } from '@actions/core';
 import { AgileClient, type Paginated, Version2Client } from 'jira.js';
 import type { Sprint } from 'jira.js/out/agile/models/sprint.js';
 import type { CreateSprint } from 'jira.js/out/agile/parameters/createSprint.js';
@@ -351,7 +351,16 @@ export class Jira {
     // do the transitions for the status
     const toStatus = createOrUpdateIssueParams.status;
 
-    await this.updateIssueStatusTo(issueKey, toStatus);
+    // get current status of the issue
+    const issue = await this.#client.issues.getIssue({ issueIdOrKey: issueKey });
+    const currentStatus = issue.fields?.status?.name;
+
+    // if the status is the same, no need to update
+    if (currentStatus?.toLowerCase() !== toStatus.toLowerCase()) {
+      await this.updateIssueStatusTo(issueKey, toStatus);
+    } else {
+      warning(`  🧪 Issue ${issueKey} already in status ${toStatus}, skipping`);
+    }
 
     // if sprint id, need to add the issue to the sprint
     if (createOrUpdateIssueParams.sprintBoardId) {
