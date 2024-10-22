@@ -137,13 +137,18 @@ export class SyncRepository {
     // get all existing sprints in Jira
     const jiraSprints = await this.#jira.getSprints();
 
+    const listOfProjects = issues.flatMap((issue) => issue.projectItems.projects)
+
+    info(`List of projects: ${JSON.stringify(listOfProjects)}`);
     // get all sprints from all issues that we need to handle
     const filteredGithubSprints = issues
       .flatMap((issue) => issue.projectItems.projects)
+      // keep only the project not undefined
+      .filter((p) => p !== undefined)
       .filter((p) => p.project.sprint !== undefined)
       .filter((p) => p.project.title?.name === this.#projectConfiguration.github.project);
 
-    // keepo only .project.sprint fields that are defined
+    // keep only .project.sprint fields that are defined
     const githubSprints = filteredGithubSprints
       .filter((s) => s.project.sprint !== undefined)
       .map((s) => s.project.sprint)
