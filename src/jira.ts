@@ -23,6 +23,7 @@ export interface CreateIssueParams {
   storyPoints?: number;
   fixVersionId?: string;
   sprintBoardId?: number;
+  jiraProjectKey: string;
 
   globalId: string;
   remoteLinkUrl: string;
@@ -278,7 +279,7 @@ export class Jira {
         ...createOptionalFields,
         summary: createOrUpdateIssueParams.title,
         project: {
-          key: 'PODMAND',
+          key: createOrUpdateIssueParams.jiraProjectKey,
         },
         issuetype: {
           name: createOrUpdateIssueParams.issuetype,

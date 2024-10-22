@@ -267,6 +267,7 @@ export class SyncRepository {
       const projectStatus = projectData?.project.status?.name;
       const status = this.getJiraStatusFromGithubProject(projectStatus);
       const storyPoints = projectData?.project.storyPoints?.value;
+      const jiraProjectKey = this.#projectConfiguration.jira.projectKey;
 
       const sprintName = projectData?.project.sprint?.title;
       let sprintBoardId: number | undefined;
@@ -288,6 +289,7 @@ export class SyncRepository {
         globalId,
         remoteLinkUrl: issue.url,
         remoteLinkTitle,
+        jiraProjectKey,
       };
 
       if (storyPoints) {
