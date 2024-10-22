@@ -259,9 +259,10 @@ export class SyncRepository {
         fixVersionId = this.#fixVersions.get(prefixedMilestone);
       }
 
-      const projectData = issue.projectItems.projects.find(
-        (p) => p.project.title?.name === this.#projectConfiguration.github.project,
-      );
+      // ignore null projects that can be returned by the GrapQH query
+      const projectData = issue.projectItems.projects
+        .filter((p) => p !== null)
+        .find((p) => p.project.title?.name === this.#projectConfiguration.github.project);
 
       const projectStatus = projectData?.project.status?.name;
       const status = this.getJiraStatusFromGithubProject(projectStatus);
