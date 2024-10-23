@@ -300,10 +300,10 @@ export class SyncRepository {
       try {
         await this.#jira.createOrUpdateIssue(issueToCreate);
       } catch (err: unknown) {
-        error(`❌ Error creating issue in Jira ${String(err)}`);
         if (isDebug()) {
           console.error(err);
         }
+        let isThrottled = false;
         // check if the error is a HttpException error
         if (err instanceof HttpException) {
           const httpException = err as HttpException;
@@ -315,9 +315,13 @@ export class SyncRepository {
           ) {
             // pause for 30s and retry after
             warning('Jira unauthorized/throttling rate limit reached, pausing for 30s before retrying');
+            isThrottled = true;
             await new Promise((resolve) => setTimeout(resolve, 30000));
             await this.#jira.createOrUpdateIssue(issueToCreate);
           }
+        }
+        if (!isThrottled) {
+          error(`❌ Error creating issue in Jira ${String(err)}`);
         }
       }
     }

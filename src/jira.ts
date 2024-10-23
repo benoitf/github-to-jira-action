@@ -359,7 +359,7 @@ export class Jira {
     if (currentStatus?.toLowerCase() !== toStatus.toLowerCase()) {
       await this.updateIssueStatusTo(issueKey, toStatus);
     } else {
-      warning(`  🧪 Issue ${issueKey} already in status ${toStatus}, skipping`);
+      debug(`  🧪 Issue ${issueKey} already in status ${toStatus}, skipping`);
     }
 
     // if sprint id, need to add the issue to the sprint
