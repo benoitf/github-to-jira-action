@@ -265,6 +265,7 @@ export class SyncRepository {
         .find((p) => p.project.title?.name === this.#projectConfiguration.github.project);
 
       const projectStatus = projectData?.project.status?.name;
+      debug(`projectStatus is ${projectData?.project.status}`);
       const status = this.getJiraStatusFromGithubProject(projectStatus);
       const storyPoints = projectData?.project.storyPoints?.value;
       const jiraProjectKey = this.#projectConfiguration.jira.projectKey;
@@ -359,12 +360,19 @@ export class SyncRepository {
   getJiraStatusFromGithubProject(githubStatus?: string): string {
     // do we have a status mapping ?
     const statusTypeMapping = this.#projectConfiguration.statusTypeMapping;
+
     if (statusTypeMapping) {
+      debug(`using statusTypeMapping definition from the configuration, githubStatus is ${githubStatus}`);
       for (const mapping of statusTypeMapping) {
+        debug(`github status is ${githubStatus} and the fromGithub definition is ${mapping.fromGithub}`);
         if (githubStatus === mapping.fromGithub) {
+          debug(`mapping found, returning ${mapping.toJira}`);
           return mapping.toJira;
         }
       }
+    } else {
+      debug(`no statusTypeMapping definition from the configuration, githubStatus is ${githubStatus}`);
+
     }
 
     // not found, default
