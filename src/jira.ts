@@ -262,7 +262,7 @@ export class Jira {
     }
 
     debug(
-      `  🧪 Creating issue in Jira Type/${createOrUpdateIssueParams.issuetype} status/${createOrUpdateIssueParams.state} state/${createOrUpdateIssueParams.state} fixVersionID ${createOrUpdateIssueParams.fixVersionId} sprintBoardId/${createOrUpdateIssueParams.sprintBoardId}`,
+      `  🧪 Creating issue in Jira Type/${createOrUpdateIssueParams.issuetype} status/${createOrUpdateIssueParams.status} state/${createOrUpdateIssueParams.state} fixVersionID ${createOrUpdateIssueParams.fixVersionId} sprintBoardId/${createOrUpdateIssueParams.sprintBoardId}`,
     );
 
     // fields that may be mandatory for certain type of fields

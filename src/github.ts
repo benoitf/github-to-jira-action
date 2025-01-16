@@ -1,4 +1,4 @@
-import { info } from '@actions/core';
+import { debug, info } from '@actions/core';
 import { getOctokit } from '@actions/github';
 import type { GitHub as OctokitGitHub } from '@actions/github/lib/utils.js';
 import { graphql } from '@octokit/graphql';
@@ -162,6 +162,8 @@ query getRecentIssues($cursorAfter: String) {
   }
 }
 `;
+
+    debug(`GraphQL query is: ${query}`);
 
     const graphQlResponse = await graphql<GraphQLSearchIssuesResponse>(query, {
       cursorAfter: cursor,

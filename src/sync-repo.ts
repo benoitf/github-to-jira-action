@@ -259,6 +259,9 @@ export class SyncRepository {
         fixVersionId = this.#fixVersions.get(prefixedMilestone);
       }
 
+      debug(`issue.projectItems.projects is ${JSON.stringify(issue.projectItems.projects)}`);
+      debug(`this.#projectConfiguration.github.project is ${this.#projectConfiguration.github.project}`);
+      
       // ignore null projects that can be returned by the GrapQH query
       const projectData = issue.projectItems.projects
         .filter((p) => p !== null)
