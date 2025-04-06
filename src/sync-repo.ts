@@ -1,4 +1,4 @@
-import { debug, endGroup, error, info, isDebug, startGroup, warning } from '@actions/core';
+import { endGroup, error, info, isDebug, startGroup, warning } from '@actions/core';
 import { HttpException } from 'jira.js';
 import * as jira2md from 'jira2md';
 import moment from 'moment';

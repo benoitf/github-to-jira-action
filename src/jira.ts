@@ -1,4 +1,4 @@
-import { debug, warning } from '@actions/core';
+import { debug } from '@actions/core';
 import { AgileClient, type Paginated, Version2Client } from 'jira.js';
 import type { Sprint } from 'jira.js/out/agile/models/sprint.js';
 import type { CreateSprint } from 'jira.js/out/agile/parameters/createSprint.js';
@@ -7,6 +7,8 @@ import type { ProjectComponent } from 'jira.js/out/version2/models/projectCompon
 import type { Version } from 'jira.js/out/version2/models/version.js';
 import type { CreateVersion } from 'jira.js/out/version2/parameters/createVersion.js';
 import type { ProjectConfiguration } from './config.js';
+import { ThrottledClient } from './throttle-client.js';
+import { ThrottleQueue } from './throttle-queue.js';
 
 export interface CreateIssueParamsMilestone {
   name: string;
@@ -83,8 +85,11 @@ export class Jira {
     };
 
     // create client
-    this.#client = new Version2Client(jiraConfig);
-    this.#agileClient = new AgileClient(jiraConfig);
+    const throttle = new ThrottleQueue(2000); // one call every 2s
+    const throttleClient = new ThrottledClient(throttle);
+
+    this.#client = throttleClient.createProxy(new Version2Client(jiraConfig));
+    this.#agileClient = throttleClient.createProxy(new AgileClient(jiraConfig));
   }
 
   async checkJiraConnection(): Promise<boolean> {
